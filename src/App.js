@@ -1,159 +1,357 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from 'react';
 
-// 🔄 Cargando
+// 📦 COMPONENTE: Pantalla de carga
 function Cargando() {
-  return <h2 style={{ textAlign: "center" }}>⏳ Cargando clientes...</h2>;
-}
-
-// ❌ Error
-function ErrorMensaje({ onRetry }) {
-  return (
-    <div style={{ textAlign: "center", color: "red" }}>
-      <h2>❌ Error</h2>
-      <p>No se pudo conectar con la API</p>
-      <button onClick={onRetry}>🔄 Reintentar</button>
-    </div>
-  );
-}
-
-// 👤 Tarjeta
-function TarjetaCliente({ cliente }) {
   return (
     <div style={{
-      border: "1px solid #ccc",
-      borderRadius: "8px",
-      padding: "15px",
-      marginBottom: "10px"
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '60px'
     }}>
-      <h3>{cliente.name}</h3>
-      <p>📧 {cliente.email}</p>
-      <p>📱 {cliente.phone}</p>
-      <p>🌐 {cliente.website}</p>
-      <p>🏢 {cliente.companyName}</p>
-      <p>💬 {cliente.catchPhrase}</p>
-      <p>📍 {cliente.city}</p>
-      <p>🏠 {cliente.street} - {cliente.suite}</p>
+      <div style={{
+        border: '5px solid #f3f3f3',
+        borderTop: '5px solid #2196f3',
+        borderRadius: '50%',
+        width: '60px',
+        height: '60px',
+        animation: 'girar 1s linear infinite'
+      }} />
+      <style>{`
+        @keyframes girar {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      <p style={{ marginLeft: '20px', fontSize: '18px', color: '#666' }}>
+        Cargando datos...
+      </p>
     </div>
   );
 }
 
+// 📦 COMPONENTE: Mensaje de error
+function MensajeError({ mensaje, onReintentar }) {
+  return (
+    <div style={{
+      padding: '30px',
+      backgroundColor: '#ffebee',
+      border: '3px solid #f44336',
+      borderRadius: '10px',
+      margin: '20px 0',
+      textAlign: 'center'
+    }}>
+      <h2 style={{ margin: '0 0 15px 0', color: '#c62828' }}>
+        ❌ Ocurrió un Error
+      </h2>
+      <p style={{ margin: '0 0 20px 0', fontSize: '16px', color: '#666' }}>
+        {mensaje}
+      </p>
+      <button
+        onClick={onReintentar}
+        style={{
+          padding: '12px 30px',
+          backgroundColor: '#f44336',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          fontWeight: 'bold'
+        }}
+      >
+        🔄 Intentar de Nuevo
+      </button>
+    </div>
+  );
+}
+
+// 📦 COMPONENTE: Tarjeta de cliente
+function TarjetaCliente({ cliente }) {
+  const [expandido, setExpandido] = useState(false);
+
+  return (
+    <div 
+      style={{
+        padding: '20px',
+        margin: '15px 0',
+        backgroundColor: 'white',
+        border: '2px solid #2196f3',
+        borderRadius: '10px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        transition: 'all 0.3s',
+        cursor: 'pointer'
+      }}
+      onClick={() => setExpandido(!expandido)}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-5px)';
+        e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, color: '#1976d2', fontSize: '20px' }}>
+          👤 {cliente.name}
+        </h3>
+        <span style={{ fontSize: '20px' }}>
+          {expandido ? '🔼' : '🔽'}
+        </span>
+      </div>
+
+      <p style={{ margin: '10px 0 0 0', color: '#666' }}>
+        📧 {cliente.email}
+      </p>
+
+      {expandido && (
+        <div style={{
+          marginTop: '15px',
+          paddingTop: '15px',
+          borderTop: '1px solid #e0e0e0'
+        }}>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>📱 Teléfono:</strong> {cliente.phone}
+          </p>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>🏢 Empresa:</strong> {cliente.company.name}
+          </p>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>💼 Slogan:</strong> {cliente.company.catchPhrase}
+          </p>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>🌐 Website:</strong> {cliente.website}
+          </p>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>📍 Ciudad:</strong> {cliente.address.city}
+          </p>
+          <p style={{ margin: '8px 0', color: '#666' }}>
+            <strong>🏠 Dirección:</strong> {cliente.address.street}, {cliente.address.suite}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 🏠 COMPONENTE PRINCIPAL
 export default function App() {
   const [clientes, setClientes] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
 
-  // 📝 Formulario
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    website: "",
-    companyName: "",
-    catchPhrase: "",
-    city: "",
-    street: "",
-    suite: ""
-  });
-
-  // 🔹 GET clientes
-  const cargarClientes = async () => {
+  // Función para obtener clientes de la API
+  async function obtenerClientes() {
     try {
       setCargando(true);
-      setError(false);
+      setError(null);
 
-      const response = await fetch("https://localhost:7055/api/clientes");
-      const data = await response.json();
+      // API de prueba (funciona en Vercel)
+      const respuesta = await fetch('https://jsonplaceholder.typicode.com/users', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setClientes(data);
-    } catch {
-      setError(true);
+      if (!respuesta.ok) {
+        throw new Error(`Error ${respuesta.status}: No se pudieron cargar los datos`);
+      }
+
+      const datos = await respuesta.json();
+      
+      if (!datos || datos.length === 0) {
+        throw new Error('No se recibieron datos de la API');
+      }
+      
+      setClientes(datos);
+
+    } catch (err) {
+      console.error('Error detallado:', err);
+      setError(`Error al conectar con la API: ${err.message}`);
     } finally {
       setCargando(false);
     }
-  };
+  }
 
+  // Cargar datos cuando la app inicia
   useEffect(() => {
-    cargarClientes();
+    obtenerClientes();
   }, []);
 
-  // ✍️ Inputs
-  const manejarCambio = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  // ➕ POST cliente
-  const agregarCliente = async (e) => {
-    e.preventDefault();
-
-    try {
-      await fetch("https://localhost:7055/api/clientes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(form)
-      });
-
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        website: "",
-        companyName: "",
-        catchPhrase: "",
-        city: "",
-        street: "",
-        suite: ""
-      });
-
-      cargarClientes();
-    } catch {
-      alert("Error al guardar cliente");
-    }
-  };
+  // Filtrar clientes según la búsqueda
+  const clientesFiltrados = clientes.filter(cliente =>
+    cliente.name.toLowerCase().includes(busqueda.toLowerCase()) ||
+    cliente.email.toLowerCase().includes(busqueda.toLowerCase()) ||
+    cliente.company.name.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
-    <div style={{ maxWidth: "800px", margin: "auto", padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>👤 Sistema de Clientes</h1>
+    <div style={{
+      fontFamily: 'Arial, sans-serif',
+      maxWidth: '900px',
+      margin: '0 auto',
+      padding: '20px',
+      backgroundColor: '#f5f5f5',
+      minHeight: '100vh'
+    }}>
+      {/* ENCABEZADO */}
+      <div style={{
+        textAlign: 'center',
+        padding: '30px',
+        backgroundColor: '#1976d2',
+        color: 'white',
+        borderRadius: '10px',
+        marginBottom: '30px'
+      }}>
+        <h1 style={{ margin: '0 0 10px 0', fontSize: '36px' }}>
+          🏢 Sistema de Gestión de Clientes
+        </h1>
+        <p style={{ margin: 0, fontSize: '18px', opacity: 0.9 }}>
+          Proyecto React desplegado en Vercel
+        </p>
+      </div>
 
-      {/* ➕ FORMULARIO */}
-      <form
-        onSubmit={agregarCliente}
-        style={{
-          background: "#f9f9f9",
-          padding: "15px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-          display: "grid",
-          gap: "8px"
-        }}
-      >
-        <h3>➕ Agregar Cliente</h3>
+      {/* ESTADÍSTICAS */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '15px',
+        marginBottom: '30px'
+      }}>
+        <div style={{
+          padding: '25px',
+          backgroundColor: 'white',
+          borderRadius: '10px',
+          textAlign: 'center',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{ margin: '0 0 10px 0', fontSize: '40px', color: '#4caf50' }}>
+            {clientes.length}
+          </h2>
+          <p style={{ margin: 0, color: '#666', fontSize: '16px' }}>
+            Total de Clientes
+          </p>
+        </div>
 
-        <input name="name" placeholder="Nombre" value={form.name} onChange={manejarCambio} required />
-        <input name="email" placeholder="Email" value={form.email} onChange={manejarCambio} required />
-        <input name="phone" placeholder="Teléfono" value={form.phone} onChange={manejarCambio} />
-        <input name="website" placeholder="Website" value={form.website} onChange={manejarCambio} />
-        <input name="companyName" placeholder="Empresa" value={form.companyName} onChange={manejarCambio} />
-        <input name="catchPhrase" placeholder="Slogan" value={form.catchPhrase} onChange={manejarCambio} />
-        <input name="city" placeholder="Ciudad" value={form.city} onChange={manejarCambio} />
-        <input name="street" placeholder="Calle" value={form.street} onChange={manejarCambio} />
-        <input name="suite" placeholder="Suite" value={form.suite} onChange={manejarCambio} />
+        <div style={{
+          padding: '25px',
+          backgroundColor: 'white',
+          borderRadius: '10px',
+          textAlign: 'center',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{ margin: '0 0 10px 0', fontSize: '40px', color: '#2196f3' }}>
+            {clientesFiltrados.length}
+          </h2>
+          <p style={{ margin: 0, color: '#666', fontSize: '16px' }}>
+            Mostrando
+          </p>
+        </div>
+      </div>
 
-        <button type="submit">💾 Guardar</button>
-      </form>
+      {/* BARRA DE BÚSQUEDA */}
+      <div style={{
+        padding: '20px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        marginBottom: '30px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <label style={{
+          display: 'block',
+          marginBottom: '10px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          color: '#333'
+        }}>
+          🔍 Buscar Cliente:
+        </label>
+        <input
+          type="text"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          placeholder="Escribe nombre, email o empresa..."
+          style={{
+            width: '100%',
+            padding: '15px',
+            fontSize: '16px',
+            border: '2px solid #2196f3',
+            borderRadius: '8px',
+            outline: 'none'
+          }}
+        />
+      </div>
 
+      {/* ESTADOS: Cargando / Error / Datos */}
       {cargando && <Cargando />}
-      {error && <ErrorMensaje onRetry={cargarClientes} />}
 
-      {!cargando && !error &&
-        clientes.map(c => (
-          <TarjetaCliente key={c.id} cliente={c} />
-        ))
-      }
+      {error && (
+        <MensajeError
+          mensaje={error}
+          onReintentar={obtenerClientes}
+        />
+      )}
+
+      {!cargando && !error && (
+        <div>
+          {clientesFiltrados.length === 0 ? (
+            <div style={{
+              padding: '60px',
+              backgroundColor: 'white',
+              borderRadius: '10px',
+              textAlign: 'center',
+              color: '#999'
+            }}>
+              <h2 style={{ fontSize: '24px' }}>😕 No se encontraron clientes</h2>
+              <p style={{ fontSize: '16px' }}>
+                {busqueda ? 'Intenta con otra búsqueda' : 'No hay clientes registrados'}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h2 style={{ color: '#333', marginBottom: '20px' }}>
+                📋 Lista de Clientes ({clientesFiltrados.length})
+              </h2>
+              {clientesFiltrados.map(cliente => (
+                <TarjetaCliente key={cliente.id} cliente={cliente} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* INFORMACIÓN DEL PROYECTO */}
+      <div style={{
+        marginTop: '40px',
+        padding: '25px',
+        backgroundColor: '#fff3e0',
+        border: '2px solid #ff9800',
+        borderRadius: '10px'
+      }}>
+        <h3 style={{ marginTop: 0, color: '#e65100' }}>
+          💡 Información del Proyecto
+        </h3>
+        <ul style={{ lineHeight: '2', color: '#666' }}>
+          <li>✅ Desplegado en <strong>Vercel</strong></li>
+          <li>✅ Usando API de prueba (jsonplaceholder)</li>
+          <li>✅ Funciona en cualquier dispositivo</li>
+          <li>✅ Disponible 24/7 en internet</li>
+        </ul>
+        <div style={{
+          marginTop: '20px',
+          padding: '15px',
+          backgroundColor: 'white',
+          borderRadius: '5px'
+        }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+            <strong>🎯 Siguiente paso:</strong> Cuando tu tío despliegue la API de C# en Azure,
+            cambia la URL en la línea 140 por la dirección de tu API real.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
