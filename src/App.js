@@ -322,36 +322,6 @@ export default function App() {
           )}
         </div>
       )}
-
-      {/* INFORMACIÓN DEL PROYECTO */}
-      <div style={{
-        marginTop: '40px',
-        padding: '25px',
-        backgroundColor: '#fff3e0',
-        border: '2px solid #ff9800',
-        borderRadius: '10px'
-      }}>
-        <h3 style={{ marginTop: 0, color: '#e65100' }}>
-          💡 Información del Proyecto
-        </h3>
-        <ul style={{ lineHeight: '2', color: '#666' }}>
-          <li>✅ Desplegado en <strong>Vercel</strong></li>
-          <li>✅ Usando API de prueba (jsonplaceholder)</li>
-          <li>✅ Funciona en cualquier dispositivo</li>
-          <li>✅ Disponible 24/7 en internet</li>
-        </ul>
-        <div style={{
-          marginTop: '20px',
-          padding: '15px',
-          backgroundColor: 'white',
-          borderRadius: '5px'
-        }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-            <strong>🎯 Siguiente paso:</strong> Cuando tu tío despliegue la API de C# en Azure,
-            cambia la URL en la línea 140 por la dirección de tu API real.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
